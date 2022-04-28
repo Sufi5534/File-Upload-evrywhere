@@ -1,1 +1,29 @@
+String url = ObtainUrlLink.obtainURL(request, "wac-3");
+				String fileName = doc.getOriginalFilename();
+				String prefix = fileName.substring(fileName.lastIndexOf("."));
+				File file = new File(fileName);
+				
+				try {
 
+				     //file = File.createTempFile(fileName, "");
+				     fullpath =  file.getName().toString();
+				     doc.transferTo(file);
+				     
+				} catch (Exception e) {
+				     e.printStackTrace();
+				}
+				
+			     getFileUploadStatus =   url+"/uploadFuturecampusEventDocFiles.obj"; 
+				  org.apache.http.client.HttpClient httpclient =  new DefaultHttpClient();
+				    HttpPost httppost = new HttpPost(getFileUploadStatus);
+				    MultipartEntity mpEntity = new MultipartEntity();
+					ContentBody cbFile=  new FileBody(file, "image/*"); 
+				    mpEntity.addPart("userfile", cbFile);
+				    httppost.setEntity(mpEntity);
+				    HttpResponse response =  httpclient.execute(httppost);
+				    HttpEntity resEntity = response.getEntity();
+				    
+				    if (resEntity != null) { 
+				      System.out.println("ok: "+EntityUtils.toString(resEntity));
+				     
+				    }
