@@ -1,0 +1,107 @@
+  String path="";
+		  String msg = "";  
+		  List<String> fileNames = new ArrayList<String>();
+		  String[] itrSplit;
+		 
+	      String isawss3=applicationProperties.getProperty("isawss3");
+
+			boolean isawss3enabled = true;
+			if (isawss3 != null && isawss3.equals("enable"))
+				isawss3enabled = true;
+			System.out.println("isawss3enabled: " + isawss3enabled);
+			Iterator<String> itr = request.getFileNames();
+			String itr1 = request.getParameter("SaveFilePath");
+			while (itr.hasNext()) {
+				List<MultipartFile> mpf = request.getFiles(itr.next());
+				System.out.println("hiii" + mpf.get(0).getOriginalFilename());
+				List<MultipartFile> crunchifyFiles = new ArrayList<MultipartFile>();
+				crunchifyFiles.addAll(mpf);
+				System.out.println("crunchifyFiles.size()===" + crunchifyFiles.size());
+				if (null != crunchifyFiles && crunchifyFiles.size() > 0) {
+					for (MultipartFile multipartFile : crunchifyFiles) {
+						// System.out.println("hyyy"+ crunchifyFiles.get(0).getName());
+						String fileName = multipartFile.getOriginalFilename();
+						String pathtest = "";
+						String filepath = "";
+							try {
+								byte[] barry = multipartFile.getBytes();
+								if (isawss3enabled) {
+//									 String endpoint = applicationProperties.getProperty("BOLBAccountEndpoint");
+//									  System.out.println("endpoint===java : "+endpoint);
+									  String SAAStoken = applicationProperties.getProperty("SAAStoken");
+									pathtest = "mediarepo2" + "/" + "futurecampus";
+									filepath = pathtest + "/" + fileName;
+									System.out.println("filepath===" + filepath);
+									AmazonS3 s3Client = new AmazonS3Client();
+									try {
+										ByteArrayInputStream dataStream = new ByteArrayInputStream(barry);
+										ObjectMetadata obkmeta = new ObjectMetadata();
+										obkmeta.setContentType("image/*");
+										s3Client.putObject(SAAStoken, filepath, dataStream, obkmeta);
+//										System.out.println("awsurl===" + endpoint + filepath);
+										itrSplit = itr1.split(",");
+										ArrayList<String> itrList = new ArrayList<String>(Arrays.asList(itrSplit));
+										session.setAttribute("fileNames", itrList);
+								        System.out.println("SaveFilePath==="+itrList.toString());
+								        System.out.println("sessionn aws=== " + session.getAttribute("fileNames"));
+										msg = "success";
+									} catch (AmazonServiceException e) {
+										System.err.println(e.getErrorMessage());
+										e.printStackTrace();
+									}
+								} 
+								else {
+									 String endpoint = applicationProperties.getProperty("BOLBAccountEndpoint");
+									  System.out.println("endpoint===java : "+endpoint);
+									  String SAAStoken = applicationProperties.getProperty("SAAStoken");
+									pathtest = "mediarepo/" + "futurecampus1/";
+									// String pathtest1 = URLDecoder.decode(pathtest, "UTF-8");
+									filepath = endpoint + "/" + pathtest + "/" + fileName;
+									System.out.println("BLOB URL===" + filepath);
+									BlobContainerClient blobContainerClient = new BlobContainerClientBuilder()
+											.endpoint(endpoint).sasToken(SAAStoken).containerName(pathtest)
+											.buildClient();
+
+									BlockBlobClient blockBlobClient = blobContainerClient.getBlobClient(fileName)
+											.getBlockBlobClient();
+									if (blockBlobClient.exists()) {
+										blockBlobClient.delete();
+										try (ByteArrayInputStream dataStream = new ByteArrayInputStream(barry)) {
+											blockBlobClient.upload(dataStream, barry.length);
+											itrSplit = itr1.split(",");
+											ArrayList <String>	itrList = new ArrayList<String>(Arrays.asList(itrSplit));
+											session.setAttribute("fileNames", itrList);
+									        System.out.println("SaveFilePath==="+itrList.toString());
+											System.out.println("sessionn=== " + session.getAttribute("fileNames"));
+											msg = "success";
+										} catch (IOException e) {
+											e.printStackTrace();
+										}
+									} else {
+										try (ByteArrayInputStream dataStream = new ByteArrayInputStream(barry)) {
+											blockBlobClient.upload(dataStream, barry.length);
+										} catch (IOException e) {
+											e.printStackTrace();
+										}
+									}
+								}
+
+							} catch (Exception e) {
+								e.printStackTrace();
+							}
+							/*
+							 * if (!theDir.exists()) { System.out.println("creating directory: " +
+							 * theDir.getName()); boolean result = false; try{ theDir.mkdir(); result =
+							 * true; } catch(SecurityException se){ se.printStackTrace(); //handle it }
+							 * if(result) { System.out.println("DIR created"); } } try {
+							 * System.out.println("INFO : file path " + filePath + "/" + fileName); path =
+							 * filePath + "/" + fileName; File fileToCreate = new File(filePath, fileName);
+							 * multipartFile.transferTo(fileToCreate); //fileNames.add(path); } catch
+							 * (IllegalStateException e) { e.printStackTrace(); msg="Fail to upload"; }
+							 */
+						}
+					}
+				}
+			
+			return msg ;
+	  }
