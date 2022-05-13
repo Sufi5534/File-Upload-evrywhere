@@ -1,0 +1,157 @@
+package com.ils.wheebox.common;
+
+import com.itextpdf.text.Font;
+import com.itextpdf.text.Image;
+
+import static org.hamcrest.CoreMatchers.not;
+
+import java.io.FileOutputStream;
+import java.net.URL;
+
+import com.itextpdf.text.Document;
+import com.itextpdf.text.DocumentException;
+import com.itextpdf.text.Element;
+import com.itextpdf.text.Phrase;
+import com.itextpdf.text.Rectangle;
+import com.itextpdf.text.pdf.ColumnText;
+import com.itextpdf.text.pdf.GrayColor;
+import com.itextpdf.text.pdf.PdfContentByte;
+import com.itextpdf.text.pdf.PdfGState;
+import com.itextpdf.text.pdf.PdfPageEventHelper;
+import com.itextpdf.text.pdf.PdfReader;
+import com.itextpdf.text.pdf.PdfStamper;
+import com.itextpdf.text.pdf.PdfWriter;
+
+public class TestWatermark  {
+public static void main(String[] args) throws Exception {
+	
+	/*
+	 * File origFile = new File("C:\\Users\\user\\Downloads\\Dress.pdf"); ImageIcon
+	 * icon = new ImageIcon(origFile.getPath()); BufferedImage bufferedImage = new
+	 * BufferedImage(icon.getIconWidth(), icon.getIconHeight(),
+	 * BufferedImage.TYPE_INT_RGB); Graphics graphics = bufferedImage.getGraphics();
+	 * graphics.drawImage(icon.getImage(), 0, 0, null);
+	 * 
+	 * 
+	 * graphics.setFont(new Font("Arial", Font.BOLD, 30)); graphics.setClip(null);
+	 * String watermark = "Sufiyan"; graphics.drawString(watermark, 0,
+	 * icon.getIconHeight() / 2); graphics.dispose(); File newFile = new
+	 * File("C:\\Users\\user\\Downloads\\DressCode.pdf"); try {
+	 * ImageIO.write(bufferedImage, "pdf", newFile); } catch (IOException e) {
+	 * e.printStackTrace(); }
+	 * 
+	 * System.out.println(newFile.getPath() + " created successfully!");
+	 */
+	 //============================================================================================
+	
+	/*
+	 * PdfReader reader = new PdfReader("C:\\Users\\user\\Downloads\\Dress.pdf");
+	 * PdfStamper pdfStamper = new PdfStamper(reader, new
+	 * FileOutputStream("C:\\Users\\user\\Downloads\\NewHelloWorld.pdf"));
+	 * 
+	 * Image image = Image.getInstance("C:\\Users\\user\\Downloads\\see1.jpg");
+	 * 
+	 * for (int i=1; i<= reader.getNumberOfPages(); i++){ PdfContentByte content =
+	 * pdfStamper.getUnderContent(i); image.setAbsolutePosition(150f, 750f);
+	 * content.addImage(image); }
+	 * 
+	 * pdfStamper.close();
+	 */
+	//========================================================================================
+	
+	  PdfReader reader = new PdfReader("C:\\Users\\user\\Downloads\\Dress.pdf");
+      PdfStamper stamper = new PdfStamper(reader, new FileOutputStream("C:\\Users\\user\\Downloads\\Dressswater.pdf"));
+	
+      Font FONT = new Font(Font.FontFamily.HELVETICA, 34, Font.BOLD, new GrayColor(0.5f));
+      Phrase p = new Phrase("made by wheebox.com Part 1", FONT);
+      Phrase p1 = new Phrase("made by wheebox.com Part 2", FONT);
+      Phrase p2 = new Phrase("made by wheebox.com Part 3", FONT);
+     
+      
+      PdfContentByte over;
+      Rectangle pagesize;
+      float x, y ;
+      
+      
+      int n = reader.getNumberOfPages();
+     
+      for (int i = 1; i <= n; i++) {
+
+    	  pagesize = reader.getPageSizeWithRotation(i);
+    	  x = (pagesize.getBottom() + pagesize.getTop()) /9;
+          y = (pagesize.getLeft() + pagesize.getRight())/8;
+         
+         
+         
+          over = stamper.getOverContent(1);
+          over = stamper.getOverContent(i);
+        
+          over.saveState();
+          
+          PdfGState state = new PdfGState();
+          state.setFillOpacity(0.2f);
+          over.setGState(state);
+          
+          if (i % 2 == 1) {
+              ColumnText.showTextAligned(over, Element.ALIGN_TOP, p, x, y, 7);
+            
+             
+          } else 
+          over.restoreState();
+      }
+      for (int i = 1; i <= n; i++) {
+
+    	  pagesize = reader.getPageSizeWithRotation(i);
+    	  x = (pagesize.getBottom() + pagesize.getTop()) /12;
+          y = (float) ((pagesize.getLeft() + pagesize.getRight())/1.5);
+         
+         
+         
+         
+          over = stamper.getOverContent(i);
+         
+          over.saveState();
+          
+          PdfGState state = new PdfGState();
+          state.setFillOpacity(0.2f);
+          over.setGState(state);
+          
+          if (i % 2 == 1) {
+              ColumnText.showTextAligned(over, Element.ALIGN_TOP, p1, x, y, 7);
+            
+             
+          } else 
+          over.restoreState();
+      }
+      for (int i = 1; i <= n; i++) {
+
+    	  pagesize = reader.getPageSizeWithRotation(i);
+    	  x = (pagesize.getBottom() + pagesize.getTop()) /20;
+          y = (float) ((pagesize.getLeft() + pagesize.getRight())/0.9);
+         
+         
+         
+         
+          over = stamper.getOverContent(i);
+          
+          over.saveState();
+          
+          PdfGState state = new PdfGState();
+          state.setFillOpacity(0.2f);
+          over.setGState(state);
+          
+          if (i % 2 == 1) {
+              ColumnText.showTextAligned(over, Element.ALIGN_TOP, p2, x, y, 6);
+            
+             
+          } else 
+          over.restoreState();
+      }
+     
+      
+      stamper.close();
+      reader.close();
+      System.out.println("Done");
+
+}
+}
